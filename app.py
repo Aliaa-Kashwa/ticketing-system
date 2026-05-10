@@ -8,15 +8,27 @@ import os
 st.set_page_config(page_title="Pro-Heater Support System", layout="wide", page_icon="🎫")
 
 # --- HIDE STREAMLIT BRANDING & TOOLBAR ---
+# --- TOTAL HIDE BRANDING (PC & MOBILE) ---
 hide_st_style = """
             <style>
+            /* Hide Main Menu, Footer, and Header */
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden;}
             header {visibility: hidden;}
-            /* This part hides the top toolbar (Fork, GitHub, etc.) */
+            
+            /* Hide the Toolbar (Fork, GitHub, etc.) */
             div[data-testid="stToolbar"] {display: none !important;}
-            /* This part hides the decoration bar at the top */
-            div[data-testid="stDecoration"] {display: none !important;}
+            
+            /* Target the specific Footer container for Mobile */
+            .stAppDeployButton {display: none !important;}
+            div[data-testid="stStatusWidget"] {display: none !important;}
+            footer {display: none !important;}
+            
+            /* Remove space at the top/bottom */
+            .block-container {
+                padding-top: 1rem;
+                padding-bottom: 0rem;
+            }
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
