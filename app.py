@@ -41,8 +41,6 @@ hide_st_style = """
             </style>
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
-# إضافة مساحة فارغة ضخمة في الأسفل لتهريب العلامة المائية
-st.write("<br>" * 20, unsafe_allow_html=True)
 
 DB_FILE = "database.csv"
 ADMIN_PASSWORD = "admin123" # Change this to your preferred password
