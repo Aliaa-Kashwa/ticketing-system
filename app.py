@@ -8,26 +8,35 @@ import os
 st.set_page_config(page_title="Pro-Heater Support System", layout="wide", page_icon="🎫")
 
 # --- HIDE STREAMLIT BRANDING & TOOLBAR ---
-# --- TOTAL HIDE BRANDING (PC & MOBILE) ---
+# --- THE ULTIMATE HIDE (PC & MOBILE) ---
 hide_st_style = """
             <style>
-            /* Hide Main Menu, Footer, and Header */
+            /* 1. Hide the Main Menu and Footer */
             #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            header {visibility: hidden;}
+            footer {visibility: hidden; display: none !important;}
+            header {visibility: hidden; display: none !important;}
             
-            /* Hide the Toolbar (Fork, GitHub, etc.) */
+            /* 2. Hide the Top Toolbar (Fork, GitHub, etc.) */
             div[data-testid="stToolbar"] {display: none !important;}
             
-            /* Target the specific Footer container for Mobile */
-            .stAppDeployButton {display: none !important;}
+            /* 3. Hide the 'Hosted by Streamlit' and status widgets */
             div[data-testid="stStatusWidget"] {display: none !important;}
-            footer {display: none !important;}
+            .stAppDeployButton {display: none !important;}
             
-            /* Remove space at the top/bottom */
+            /* 4. Extra force to hide anything related to Streamlit branding */
+            [data-testid="stConnectionStatus"] {display: none !important;}
+            [data-testid="stDecoration"] {display: none !important;}
+            
+            /* 5. Custom fix for the bottom 'Hosted by Streamlit' text */
+            .st-emotion-cache-1kyx601 {display: none !important;} 
+            .st-emotion-cache-v609y2 {display: none !important;}
+
+            /* 6. Adjust page margins to look cleaner */
             .block-container {
                 padding-top: 1rem;
                 padding-bottom: 0rem;
+                padding-left: 1rem;
+                padding-right: 1rem;
             }
             </style>
             """
