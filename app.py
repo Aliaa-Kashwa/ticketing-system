@@ -31,11 +31,14 @@ hide_st_style = """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
 # --- 3. GOOGLE SHEETS CONNECTION ---
+# ضعي رابط ملفك هنا بين علامتي التنصيص
+SHEET_URL = "https://docs.google.com/spreadsheets/d/18aAMNSGmi_AIcQSLPoSroiVt-0C8GgRClOOOmMKhThg/edit?gid=0#gid=0"
+
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def load_data():
-    # جلب البيانات من شيت جوجل مباشرة
-    return conn.read(ttl="0")
+    # هنا قمنا بإضافة الرابط مباشرة داخل الدالة لتجنب خطأ الـ Secrets
+    return conn.read(spreadsheet=SHEET_URL, ttl="0")
 
 # إعدادات الأدمن
 ADMIN_PASSWORD = "aliaa123" 
