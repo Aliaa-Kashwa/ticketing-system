@@ -19,7 +19,7 @@ hide_st_style = """
             div[data-testid="stDecoration"] {display: none !important;}
             </style>
             """
-st.markdown(hide_st_style, unsafe_allow_config=True)
+st.markdown(hide_st_style, unsafe_allow_html=True)
 
 DB_FILE = "database.csv"
 ADMIN_PASSWORD = "admin123" # Change this to your preferred password
