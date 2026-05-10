@@ -1,3 +1,4 @@
 streamlit 
 pandas 
-plotly
+Plotly
+st-gsheets-connection
