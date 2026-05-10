@@ -5,7 +5,7 @@ from datetime import datetime
 import os
 
 # --- PAGE CONFIGURATION ---
-st.set_page_config(page_title="Pro-Heater Support System", layout="wide", page_icon="🎫")
+st.set_page_config(page_title="Ticketing System", layout="wide", page_icon="🎫")
 
 # --- HIDE STREAMLIT BRANDING & TOOLBAR ---
 # --- THE ULTIMATE HIDE (PC & MOBILE) ---
@@ -43,7 +43,7 @@ hide_st_style = """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
 DB_FILE = "database.csv"
-ADMIN_PASSWORD = "admin123" # Change this to your preferred password
+ADMIN_PASSWORD = "aliaa123" 
 
 # --- DATA FUNCTIONS ---
 def load_data():
