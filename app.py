@@ -2,36 +2,24 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from datetime import datetime
-import os
+from streamlit_gsheets import GSheetsConnection
 
-# --- PAGE CONFIGURATION ---
+# --- 1. PAGE CONFIGURATION ---
 st.set_page_config(page_title="Ticketing System", layout="wide", page_icon="🎫")
 
-# --- HIDE STREAMLIT BRANDING & TOOLBAR ---
-# --- THE ULTIMATE HIDE (PC & MOBILE) ---
+# --- 2. THE ULTIMATE HIDE (CSS) ---
 hide_st_style = """
             <style>
-            /* 1. Hide the Main Menu and Footer */
             #MainMenu {visibility: hidden;}
             footer {visibility: hidden; display: none !important;}
             header {visibility: hidden; display: none !important;}
-            
-            /* 2. Hide the Top Toolbar (Fork, GitHub, etc.) */
             div[data-testid="stToolbar"] {display: none !important;}
-            
-            /* 3. Hide the 'Hosted by Streamlit' and status widgets */
             div[data-testid="stStatusWidget"] {display: none !important;}
             .stAppDeployButton {display: none !important;}
-            
-            /* 4. Extra force to hide anything related to Streamlit branding */
             [data-testid="stConnectionStatus"] {display: none !important;}
             [data-testid="stDecoration"] {display: none !important;}
-            
-            /* 5. Custom fix for the bottom 'Hosted by Streamlit' text */
             .st-emotion-cache-1kyx601 {display: none !important;} 
             .st-emotion-cache-v609y2 {display: none !important;}
-
-            /* 6. Adjust page margins to look cleaner */
             .block-container {
                 padding-top: 1rem;
                 padding-bottom: 0rem;
@@ -42,23 +30,21 @@ hide_st_style = """
             """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
-DB_FILE = "database.csv"
+# --- 3. GOOGLE SHEETS CONNECTION ---
+conn = st.connection("gsheets", type=GSheetsConnection)
+
+def load_data():
+    # جلب البيانات من شيت جوجل مباشرة
+    return conn.read(ttl="0")
+
+# إعدادات الأدمن
 ADMIN_PASSWORD = "aliaa123" 
 
-# --- DATA FUNCTIONS ---
-def load_data():
-    if os.path.exists(DB_FILE):
-        return pd.read_csv(DB_FILE)
-    return pd.DataFrame(columns=["ID", "Timestamp", "Employee Name", "Department", "Issue Category", "Description", "Priority", "Status"])
-
-def save_data(df):
-    df.to_csv(DB_FILE, index=False)
-
-# --- UI HEADER ---
+# --- 4. UI HEADER ---
 st.title("🏗️ Ticketing System")
 st.markdown("---")
 
-# --- APP TABS ---
+# --- 5. APP TABS ---
 tab1, tab2, tab3 = st.tabs(["🆕 Submit Ticket", "📊 Analytics Dashboard", "🔐 Admin Control"])
 
 # --- TAB 1: SUBMIT TICKET ---
@@ -79,9 +65,11 @@ with tab1:
         if submit:
             if emp_name and description:
                 df = load_data()
-                new_id = len(df) + 1001
-                new_data = {
-                    "ID": new_id,
+                # توليد ID جديد بناءً على آخر ID موجود
+                new_id = 1001 if df.empty else df['ID'].max() + 1
+                
+                new_data = pd.DataFrame([{
+                    "ID": int(new_id),
                     "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
                     "Employee Name": emp_name,
                     "Department": dept,
@@ -89,10 +77,12 @@ with tab1:
                     "Description": description,
                     "Priority": priority,
                     "Status": "Pending"
-                }
-                df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
-                save_data(df)
-                st.success(f"Ticket #{new_id} has been submitted successfully!")
+                }])
+                
+                # تحديث شيت جوجل بالبيانات الجديدة
+                updated_df = pd.concat([df, new_data], ignore_index=True)
+                conn.update(data=updated_df)
+                st.success(f"Ticket #{new_id} has been submitted successfully! ✅")
             else:
                 st.error("Please fill in all required fields.")
 
@@ -111,7 +101,10 @@ with tab2:
             fig_status = px.pie(df, names='Status', title='Tickets by Status', hole=0.4)
             st.plotly_chart(fig_status)
         with c2:
-            fig_dept = px.bar(df['Department'].value_counts(), title='Tickets by Department')
+            # معالجة البيانات للرسم البياني للأقسام
+            dept_counts = df['Department'].value_counts().reset_index()
+            dept_counts.columns = ['Department', 'count']
+            fig_dept = px.bar(dept_counts, x='Department', y='count', title='Tickets by Department')
             st.plotly_chart(fig_dept)
     else:
         st.info("No data available yet.")
@@ -132,17 +125,21 @@ with tab3:
                 t_id = st.number_input("Enter Ticket ID", min_value=1001, step=1)
                 new_status = st.selectbox("New Status", ["Pending", "In Progress", "Resolved", "Cancelled"])
                 if st.button("Update Status"):
-                    df.loc[df['ID'] == t_id, 'Status'] = new_status
-                    save_data(df)
-                    st.success(f"Ticket #{t_id} updated to {new_status}")
-                    st.rerun()
+                    if t_id in df['ID'].values:
+                        df.loc[df['ID'] == t_id, 'Status'] = new_status
+                        conn.update(data=df)
+                        st.success(f"Ticket #{t_id} updated to {new_status}")
+                        st.rerun()
+                    else:
+                        st.error("Ticket ID not found.")
 
             st.dataframe(df.sort_values(by="Timestamp", ascending=False), use_container_width=True)
             
+            # ملاحظة: زر مسح البيانات سيقوم بمسح كل شيء من جوجل شيت
             if st.button("Clear All Data (Danger)"):
-                if os.path.exists(DB_FILE):
-                    os.remove(DB_FILE)
-                    st.rerun()
+                empty_df = pd.DataFrame(columns=["ID", "Timestamp", "Employee Name", "Department", "Issue Category", "Description", "Priority", "Status"])
+                conn.update(data=empty_df)
+                st.rerun()
         else:
             st.info("No tickets to manage.")
     elif pwd != "":
