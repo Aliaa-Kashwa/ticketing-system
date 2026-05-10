@@ -55,7 +55,7 @@ def save_data(df):
     df.to_csv(DB_FILE, index=False)
 
 # --- UI HEADER ---
-st.title("🏗️ Pro-Heater Application Support System")
+st.title("🏗️ Ticketing System")
 st.markdown("---")
 
 # --- APP TABS ---
@@ -67,10 +67,10 @@ with tab1:
     with st.form("ticket_form", clear_on_submit=True):
         col1, col2 = st.columns(2)
         with col1:
-            emp_name = st.text_input("Employee Full Name")
-            dept = st.selectbox("Department", ["Production", "Quality", "Maintenance", "HR", "Sales", "IT", "Finance"])
+            emp_name = st.text_input("Employee Name")
+            dept = st.selectbox("Department", ["Production", "Quality", "Maintenance", "HR", "Purchasing", "IT", "Finance", "R&D", "CI", "HSE", "Logistics"])
         with col2:
-            category = st.selectbox("Issue Category", ["Software Bug", "Data Request", "System Access", "Heater Configuration", "Other"])
+            category = st.selectbox("Issue Category", ["Software Bug", "Data Request", "System Access", "Other"])
             priority = st.select_slider("Priority Level", options=["Low", "Medium", "High"])
         
         description = st.text_area("Detailed Description of the Problem")
