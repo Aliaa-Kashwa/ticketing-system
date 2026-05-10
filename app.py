@@ -7,6 +7,20 @@ import os
 # --- PAGE CONFIGURATION ---
 st.set_page_config(page_title="Pro-Heater Support System", layout="wide", page_icon="🎫")
 
+# --- HIDE STREAMLIT BRANDING & TOOLBAR ---
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            /* This part hides the top toolbar (Fork, GitHub, etc.) */
+            div[data-testid="stToolbar"] {display: none !important;}
+            /* This part hides the decoration bar at the top */
+            div[data-testid="stDecoration"] {display: none !important;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_config=True)
+
 DB_FILE = "database.csv"
 ADMIN_PASSWORD = "admin123" # Change this to your preferred password
 
