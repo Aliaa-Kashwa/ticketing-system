@@ -1,4 +1,4 @@
-streamlit 
-pandas 
-Plotly
-st-gsheets-connection
+streamlit
+pandas
+plotly
+openpyxl
