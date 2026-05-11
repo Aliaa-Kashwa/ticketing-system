@@ -3,7 +3,6 @@ import pandas as pd
 import plotly.express as px
 from datetime import datetime
 import os
-import time  # أضفنا المكتبة دي عشان نتحكم في وقت ظهور الرسالة
 
 # --- 1. PAGE CONFIGURATION ---
 st.set_page_config(page_title="Ticketing System", layout="wide", page_icon="🎫")
@@ -20,34 +19,36 @@ hide_st_style = """
 st.markdown(hide_st_style, unsafe_allow_html=True)
 
 # --- 3. ONEDRIVE EXCEL CONFIGURATION ---
-user_profile = os.environ.get('USERPROFILE', '')
-EXCEL_PATH = os.path.join(user_profile, r"OneDrive - GROUPE ATLANTIC\Documents\Ticketing System\Ticketing_System_DB.xlsx")
+# تم تعديل المسار بناءً على هيكلة الـ OneDrive الخاصة بكِ
+EXCEL_PATH = r"C:\Users\afaisal\OneDrive - GROUPE ATLANTIC\Documents\Ticketing System\Ticketing_System_DB.xlsx"
 COLUMNS_LIST = ["ID", "Timestamp", "Employee Name", "Department", "Issue Category", "Description", "Priority", "Status"]
 
 def load_data():
     if not os.path.exists(EXCEL_PATH):
+        # إنشاء ملف جديد لو مش موجود
         df = pd.DataFrame(columns=COLUMNS_LIST)
         df.to_excel(EXCEL_PATH, index=False)
         return df
     
     try:
         df = pd.read_excel(EXCEL_PATH)
+        # تأكيد أنواع البيانات (Casting)
         if not df.empty:
             df['ID'] = pd.to_numeric(df['ID'], errors='coerce').fillna(0).astype(int)
             df['Timestamp'] = pd.to_datetime(df['Timestamp'], errors='coerce')
         return df
     except Exception as e:
-        st.error(f"Error loading data: {e}")
+        st.error(f"Error loading Excel from OneDrive: {e}")
         return pd.DataFrame(columns=COLUMNS_LIST)
 
 def save_data(df_to_save):
     try:
+        # التأكد من ترتيب الأعمدة قبل الحفظ
         df_to_save = df_to_save[COLUMNS_LIST]
-        with pd.ExcelWriter(EXCEL_PATH, engine='openpyxl') as writer:
-            df_to_save.to_excel(writer, index=False)
+        df_to_save.to_excel(EXCEL_PATH, index=False)
         return True
     except PermissionError:
-        st.error("❌ Error: The Excel file is currently open. Please close it and try again.")
+        st.error("❌ عذراً: ملف الإكسيل مفتوح حالياً. يرجى إغلاقه لتتمكن من حفظ البيانات.")
         return False
     except Exception as e:
         st.error(f"Error saving to OneDrive: {e}")
@@ -57,26 +58,26 @@ def save_data(df_to_save):
 ADMIN_PASSWORD = "aliaa123" 
 
 # --- 4. UI HEADER ---
-st.title("🎫 IT Support & Technical Ticketing")
+st.title("🏗️ Ticketing System")
 st.markdown("---")
 
 # --- 5. APP TABS ---
-tab1, tab2, tab3 = st.tabs(["🆕 Submit Request", "📊 Insights Dashboard", "🔐 Admin Control"])
+tab1, tab2, tab3 = st.tabs(["🆕 Submit Ticket", "📊 Analytics Dashboard", "🔐 Admin Control"])
 
 # --- TAB 1: SUBMIT TICKET ---
 with tab1:
-    st.header("Submit a New Ticket")
+    st.header("Submit a Technical Request")
     with st.form("ticket_form", clear_on_submit=True):
         col1, col2 = st.columns(2)
         with col1:
             emp_name = st.text_input("Employee Name")
             dept = st.selectbox("Department", ["Production", "Quality", "Maintenance", "HR", "Purchasing", "IT", "Finance", "R&D", "CI", "HSE", "Logistics"])
         with col2:
-            category = st.selectbox("Issue Category", ["Software Bug", "Data Request", "System Access", "Hardware", "Other"])
+            category = st.selectbox("Issue Category", ["Software Bug", "Data Request", "System Access", "Other"])
             priority = st.select_slider("Priority Level", options=["Low", "Medium", "High"])
         
-        description = st.text_area("Problem Description")
-        submit = st.form_submit_button("Submit Ticket")
+        description = st.text_area("Detailed Description")
+        submit = st.form_submit_button("Submit Request")
 
         if submit:
             if emp_name and description:
@@ -96,69 +97,44 @@ with tab1:
                 
                 updated_df = pd.concat([df, new_row], ignore_index=True)
                 if save_data(updated_df):
-                    st.success(f"Ticket #{new_id} has been submitted successfully! ✅")
+                    st.success(f"Ticket #{new_id} saved! ✅")
             else:
                 st.error("Please fill in all required fields.")
 
 # --- TAB 2: ANALYTICS ---
 with tab2:
-    st.header("📊 Support Metrics")
+    st.header("Support Insights")
     df = load_data()
     if not df.empty:
-        m1, m2, m3 = st.columns(3)
-        m1.metric("Total Tickets", len(df))
-        m2.metric("Pending", len(df[df['Status'] == 'Pending']))
-        m3.metric("Resolved", len(df[df['Status'] == 'Resolved']))
+        col_m1, col_m2, col_m3 = st.columns(3)
+        col_m1.metric("Total Tickets", len(df))
+        col_m2.metric("Pending Issues", len(df[df['Status'] == 'Pending']))
+        col_m3.metric("Resolved Issues", len(df[df['Status'] == 'Resolved']))
 
         c1, c2 = st.columns(2)
         with c1:
-            fig_status = px.pie(df, names='Status', title='Overall Status', hole=0.5)
+            fig_status = px.pie(df, names='Status', title='Status Overview', hole=0.4)
             st.plotly_chart(fig_status)
         with c2:
             dept_counts = df['Department'].value_counts().reset_index()
-            fig_dept = px.bar(dept_counts, x='Department', y='count', title='Requests by Department')
+            fig_dept = px.bar(dept_counts, x='Department', y='count', title='Tickets per Department')
             st.plotly_chart(fig_dept)
     else:
-        st.info("Database is empty. No metrics to display.")
+        st.info("No data found in OneDrive file.")
 
 # --- TAB 3: ADMIN CONTROL ---
 with tab3:
-    st.header("🔐 Admin Panel")
-    pwd = st.text_input("Enter Admin Password", type="password")
-    
+    st.header("Admin Management")
+    pwd = st.text_input("Password", type="password")
     if pwd == ADMIN_PASSWORD:
         df = load_data()
         if not df.empty:
-            st.subheader("Update Ticket Status")
-            t_id = st.number_input("Enter Ticket ID", min_value=1001, step=1)
-            
-            selected_ticket = df[df['ID'] == t_id]
-            if not selected_ticket.empty:
-                curr_status = selected_ticket['Status'].values[0]
-                owner = selected_ticket['Employee Name'].values[0]
-                
-                st.info(f"🔎 **Ticket Info:** #{t_id} | **Owner:** {owner} | **Status:** {curr_status}")
-                
-                new_status = st.selectbox("Update Status to:", ["Pending", "In Progress", "Resolved", "Cancelled"])
-                
-                # إنشاء مساحة مخصصة للرسائل
-                status_message = st.empty()
-                
-                if st.button("Update Status"):
+            t_id = st.number_input("Enter Ticket ID to Update", min_value=1001, step=1)
+            new_status = st.selectbox("New Status", ["Pending", "In Progress", "Resolved", "Cancelled"])
+            if st.button("Update Status"):
+                if t_id in df['ID'].values:
                     df.loc[df['ID'] == t_id, 'Status'] = new_status
                     if save_data(df):
-                        # عرض الرسالة والاحتفال
-                        status_message.success("Status updated successfully! ✅")
-                        st.balloons()
-                        # انتظار ثانيتين ليرى المستخدم الرسالة
-                        time.sleep(2)
-                        # تحديث الصفحة
+                        st.success("Updated!")
                         st.rerun()
-            else:
-                st.warning(f"Ticket #{t_id} not found.")
-
-            st.markdown("---")
-            st.subheader("Active Database View")
             st.dataframe(df.sort_values(by="ID", ascending=False), use_container_width=True)
-    elif pwd != "":
-        st.error("Incorrect Password")
